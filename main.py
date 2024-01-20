@@ -2,6 +2,7 @@
 def check_row(param, row):
     if param in row and row.count(param) == len(row):
         return True
+        
 def check_step(field, param):
     first_diog = [x for i, el in enumerate(field) for j, x in enumerate(el) if j == i]
     second_diog = [x for i, el in enumerate(field) for j, x in enumerate(el) if i == abs(j - (len(el) - 1))]
@@ -46,7 +47,7 @@ def start_game():
     i = 0
     print('Начинаем игру')
     print_field(field)
-    while i <= 9:
+    while i < 9:
         i += 1
         print(f'Ход { param_to_move }')
         if enter_coordinates(field, param_to_move) and not check_step(field, param_to_move):
@@ -57,5 +58,7 @@ def start_game():
             print(f'{ param_to_move } - Выйграли')
             print('Игра закончилась')
             break
+    else: 
+        print('Ничья')
 
 start_game()
