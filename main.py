@@ -16,16 +16,17 @@ def check_step(field, param):
         return False
 
 def print_field(field):
-    for el in field:
-        print(f'| {el[0]} | {el[1]} | {el[2]} |')
+    print(f'    0   1   2')
+    for i, el in enumerate(field):
+        print(f'{i} | {el[0]} | {el[1]} | {el[2]} |')
 
 def enter_coordinates(field, param_to_move):
     j = 0
     while j <= 3:
         j += 1
         try:
-            a = int(input('Введите координату по горизонтале в диапазоне от 0 до 3: '))
-            b = int(input('Введите координату по вертикале в диапазоне от 0 до 3: '))
+            a = int(input('Введите координату по вертикале в диапазоне от 0 до 3: '))
+            b = int(input('Введите координату по горизонтале в диапазоне от 0 до 3: '))
             if field[b][a] == '-':
                 field[b][a] = param_to_move
                 return True
