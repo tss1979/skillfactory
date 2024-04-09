@@ -1,64 +1,66 @@
+from token_data import TOKEN
+from recipes_handler import router
+import asyncio
+import logging
+import sys
+from aiogram import Bot, Dispatcher, types
+from aiogram.filters import CommandStart
+from aiogram.types import Message
+from aiogram import F
+from aiogram.utils.formatting import (
+    Bold, as_list, as_marked_section
+)
 
-def check_row(param, row):
-    if param in row and row.count(param) == len(row):
-        return True
-        
-def check_step(field, param):
-    first_diog = [x for i, el in enumerate(field) for j, x in enumerate(el) if j == i]
-    second_diog = [x for i, el in enumerate(field) for j, x in enumerate(el) if i == abs(j - (len(el) - 1))]
-    for i, el in enumerate(field):
-        col = [x[i] for x in field]
-        if check_row(param, el) or check_row(param, col):
-            return True
-    if check_row(param, first_diog) or check_row(param, second_diog):
-        return True
+dp = Dispatcher()
+dp.include_router(router)
 
-    else:
-        return False
 
-def print_field(field):
-    print(f'    0   1   2')
-    for i, el in enumerate(field):
-        print(f'{i} | {el[0]} | {el[1]} | {el[2]} |')
+@dp.message(CommandStart())
+async def command_start_handler(message: Message) -> None:
+    '''Функция выводит сообщение при вызове команды /start и формиреут 2 кнопки вызова информации'''
+    kb = [
+        [
+            types.KeyboardButton(text="Команды"),
+            types.KeyboardButton(text="Описание бота"),
+        ],
+    ]
+    keyboard = types.ReplyKeyboardMarkup(
+        keyboard=kb,
+        resize_keyboard=True,
+    )
 
-def enter_coordinates(field, param_to_move):
-    j = 0
-    while j <= 3:
-        j += 1
-        try:
-            a = int(input('Введите координату по вертикале в диапазоне от 0 до 3: '))
-            b = int(input('Введите координату по горизонтале в диапазоне от 0 до 3: '))
-            if field[b][a] == '-':
-                field[b][a] = param_to_move
-                return True
-            else:
-                print('В это поле сходить нельзя, оно уже занято')
-                continue
-        except:
-            print('Неверные пераметры ввода')
-            continue
-    else:
-        print('Мы не смогли начать игру, вы вводите неверные параметры')
-        return False
+    await message.answer(f"Привет! С чего начнем?", reply_markup=keyboard)
 
-def start_game():
-    field = [['-' for _ in range(3)] for _ in range(3)]
-    param_to_move = 'X'
-    i = 0
-    print('Начинаем игру')
-    print_field(field)
-    while i < 9:
-        i += 1
-        print(f'Ход { param_to_move }')
-        if enter_coordinates(field, param_to_move) and not check_step(field, param_to_move):
-            print_field(field)
-            param_to_move = 'X' if param_to_move == 'O' else 'O'
-        else:
-            print_field(field)
-            print(f'{ param_to_move } - Выйграли')
-            print('Игра закончилась')
-            break
-    else: 
-        print('Ничья')
 
-start_game()
+@dp.message(F.text.lower() == "команды")
+async def commands(message: types.Message):
+    '''Функция формирует описание основных команд при нажатии на кнопку "Команды"'''
+    response = as_list(
+        as_marked_section(
+            Bold("Команды:"),
+            "/category_search_random 3 - команда вызова категорий и цифрой задается количество рецептов",
+            "кнопка категории - выбор рецептов из категории",
+            "кнопка показать рецепты - показать рецепты из показанного предложения",
+            marker="✅ ",
+        ),
+    )
+    await message.answer(
+        **response.as_kwargs()
+    )
+
+
+@dp.message(F.text.lower() == "описание бота")
+async def description(message: types.Message):
+    '''Функция формирует описание функциональности бота при нажатии на кнопку "Описание бота"'''
+    await message.answer("Этот бот предоставляет информацию рецептах по заданной категории")
+
+
+async def main() -> None:
+    '''Функция формирует и запускает бота'''
+    bot = Bot(TOKEN)
+    await dp.start_polling(bot)
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    asyncio.run(main())
