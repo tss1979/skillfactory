@@ -1,15 +1,16 @@
 from token_data import TOKEN
-from recipes_handler import router
+from bot_handler import router
 import asyncio
 import logging
 import sys
 from aiogram import Bot, Dispatcher, types
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
 from aiogram import F
 from aiogram.utils.formatting import (
     Bold, as_list, as_marked_section
 )
+from utils import programm_description
 
 dp = Dispatcher()
 dp.include_router(router)
@@ -22,14 +23,19 @@ async def command_start_handler(message: Message) -> None:
         [
             types.KeyboardButton(text="Команды"),
             types.KeyboardButton(text="Описание бота"),
+            types.KeyboardButton(text="Узнать больше о программе"),
         ],
     ]
     keyboard = types.ReplyKeyboardMarkup(
         keyboard=kb,
         resize_keyboard=True,
     )
+    await message.answer_photo(photo=types.FSInputFile('assets/logo.jpg'))
 
-    await message.answer(f"Привет! С чего начнем?", reply_markup=keyboard)
+    await message.answer('<b>Добро пожаловать в бот Московского Зоопарка</b>',  parse_mode="HTML")
+    await message.answer("<u>Проект 'Возьмите животное под опеку'</u>",  parse_mode="HTML")
+    await message.answer(f"Давайте выясним какое у вас тотемное животное", reply_markup=keyboard)
+
 
 
 @dp.message(F.text.lower() == "команды")
@@ -38,9 +44,9 @@ async def commands(message: types.Message):
     response = as_list(
         as_marked_section(
             Bold("Команды:"),
-            "/category_search_random 3 - команда вызова категорий и цифрой задается количество рецептов",
-            "кнопка категории - выбор рецептов из категории",
-            "кнопка показать рецепты - показать рецепты из показанного предложения",
+            "/lets_go - команда запускает викторину",
+            "/stop - выход из викторины",
+            "/more",
             marker="✅ ",
         ),
     )
@@ -52,8 +58,24 @@ async def commands(message: types.Message):
 @dp.message(F.text.lower() == "описание бота")
 async def description(message: types.Message):
     '''Функция формирует описание функциональности бота при нажатии на кнопку "Описание бота"'''
-    await message.answer("Этот бот предоставляет информацию рецептах по заданной категории")
+    await message.answer("Этот бот- викторина, помогающий вам подобрать животное для опеки")
 
+@dp.message(F.text.lower() == "узнать больше о программе")
+async def description(message: types.Message):
+    '''Функция формирует описание программы московского зоопарка'''
+    await message.answer_photo(photo=types.FSInputFile('assets/horse.jpg'))
+    await message.answer(programm_description)
+
+@dp.message(Command("more"))
+async def description(message: types.Message):
+    '''Функция формирует описание программы московского зоопарка'''
+    await message.answer_photo(photo=types.FSInputFile('assets/horse.jpg'))
+    await message.answer(programm_description)
+
+@dp.message(Command("stop"))
+async def description(message: types.Message):
+    '''Функция формирует описание программы московского зоопарка'''
+    pass
 
 async def main() -> None:
     '''Функция формирует и запускает бота'''
